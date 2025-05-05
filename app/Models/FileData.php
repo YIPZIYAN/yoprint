@@ -7,6 +7,16 @@ use Illuminate\Database\Eloquent\Model;
 
 class FileData extends Model
 {
-    /** @use HasFactory<\Database\Factories\FileDataFactory> */
     use HasFactory;
+
+    protected $fillable = [
+        'unique_key',
+        'product_title',
+        'product_description',
+        'style',
+        'sanmar_mainframe_color',
+        'size',
+        'color_name',
+        'piece_price',
+    ];
 }
