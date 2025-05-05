@@ -27,16 +27,18 @@ class UploadFileJob implements ShouldQueue
     public function handle(): void
     {
         $fileUpload = FileUpload::create([
-            'name' => $this->file
+            'name' => $this->file,
         ]);
 
         $fileUpload->status = UploadStatus::Processing;
+        $fileUpload->save();
 
         try {
             $csv = Reader::createFromPath($this->file);
             $csv->setHeaderOffset(0);
-            $records = $csv->getRecordsAsObject(FileData::class);
-            FileData::upsert((array)$records, 'unique_key');
+            $records = iterator_to_array($csv->getRecords());
+            FileData::upsert($records, 'unique_key',
+                array_diff(array_keys($records[0]), ['unique_key']));
             $fileUpload->status = UploadStatus::Completed;
         } catch (\Exception $e) {
             $fileUpload->status = UploadStatus::Failed;
