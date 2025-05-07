@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Enum\UploadStatus;
+use App\Jobs\UploadFileJob;
 use App\Models\FileUpload;
 use App\Http\Requests\StoreFileUploadRequest;
 use App\Http\Requests\UpdateFileUploadRequest;
@@ -29,7 +31,11 @@ class FileUploadController extends Controller
      */
     public function store(StoreFileUploadRequest $request)
     {
-        //
+        $fileName = now()->format('Ymd_His') . '_' . $request->file('csvFile')->getClientOriginalName();
+        UploadFileJob::dispatch(
+            $request->file('csvFile')->storeAs('files', $fileName),
+            $fileName);
+        return redirect()->route('home');
     }
 
     /**

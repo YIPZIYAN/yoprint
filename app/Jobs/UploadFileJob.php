@@ -3,12 +3,18 @@
 namespace App\Jobs;
 
 use App\Enum\UploadStatus;
+use App\Imports\FileUploadsImport;
 use App\Models\FileData;
 use App\Models\FileUpload;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use League\Csv\Reader;
+use League\Csv\Statement;
+use Maatwebsite\Excel\Excel;
+use Maatwebsite\Excel\HeadingRowImport;
+use Maatwebsite\Excel\Validators\ValidationException;
 
 class UploadFileJob implements ShouldQueue
 {
@@ -17,7 +23,7 @@ class UploadFileJob implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(public $file)
+    public function __construct(public $file, public $fileName)
     {
     }
 
@@ -26,23 +32,32 @@ class UploadFileJob implements ShouldQueue
      */
     public function handle(): void
     {
+
         $fileUpload = FileUpload::create([
-            'name' => $this->file,
+            'name' => $this->fileName,
         ]);
 
         $fileUpload->status = UploadStatus::Processing;
         $fileUpload->save();
 
         try {
-            $csv = Reader::createFromPath($this->file);
-            $csv->setHeaderOffset(0);
-            $records = iterator_to_array($csv->getRecords());
-            FileData::upsert($records, 'unique_key',
-                array_diff(array_keys($records[0]), ['unique_key']));
+            (new FileUploadsImport)->queue($this->file,
+                null, Excel::CSV);
             $fileUpload->status = UploadStatus::Completed;
-        } catch (\Exception $e) {
+        } catch (ValidationException $e) {
             $fileUpload->status = UploadStatus::Failed;
+        } finally {
+            $fileUpload->save();
         }
 
     }
+
+//            $fileUpload->status = UploadStatus::Completed;
+//        } catch (\Exception $e) {
+//            $fileUpload->status = UploadStatus::Failed;
+//        } finally {
+//            $fileUpload->save();
+//        }
+
+
 }
