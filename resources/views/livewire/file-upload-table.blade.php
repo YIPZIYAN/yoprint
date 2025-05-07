@@ -17,13 +17,13 @@
         @forelse($fileUploads as $fileUpload)
             <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
                 <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                    {{ $fileUpload->created_at }}
+                    {{ $fileUpload['created_at'] }}
                 </th>
                 <td class="px-6 py-4">
-                    {{ $fileUpload->name }}
+                    {{ $fileUpload['name'] }}
                 </td>
                 <td class="px-6 py-4">
-                    {{ $fileUpload->status }}
+                    {{ $fileUpload['status'] }}
                 </td>
             </tr>
         @empty

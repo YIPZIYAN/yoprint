@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Http\Resources\FileUploadResource;
 use App\Models\FileUpload;
 use Livewire\Component;
 
@@ -10,7 +11,7 @@ class FileUploadTable extends Component
     public function render()
     {
         return view('livewire.file-upload-table',[
-            'fileUploads' => FileUpload::all()
+            'fileUploads' => FileUploadResource::collection(FileUpload::all())->toArray(request())
         ]);
     }
 }
