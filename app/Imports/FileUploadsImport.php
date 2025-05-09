@@ -86,7 +86,10 @@ class FileUploadsImport implements ToModel, WithHeadingRow, WithBatchInserts,
     {
         return array_map(function ($value) {
             if (is_string($value)) {
-                return preg_replace('/[^\x20-\x7E]/', '', $value);
+                $value = mb_convert_encoding($value, 'UTF-8', 'ISO-8859-1');
+                $value = preg_replace('/[^\x20-\x7E]/', '', $value);
+//                $value = preg_replace('/&[#a-zA-Z0-9]+;/', '', $value);
+                return html_entity_decode($value, ENT_QUOTES | ENT_HTML5);
             }
             return $value;
         }, $row);
