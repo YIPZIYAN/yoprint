@@ -25,8 +25,9 @@ class UploadFileJob implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(public $file, public $fileName)
+    public function __construct(private FileUpload $fileUpload)
     {
+
     }
 
     /**
@@ -35,19 +36,16 @@ class UploadFileJob implements ShouldQueue
     public function handle(): void
     {
 
-        $fileUpload = FileUpload::create(['name' => $this->fileName]);
-
         try {
-            (new FileUploadsImport($fileUpload))
-                ->queue($this->file, '', Excel::CSV)
-                ->chain([new NotifyCompletedImport($fileUpload)]);
+            (new FileUploadsImport($this->fileUpload))
+                ->queue($this->fileUpload->path, 'csv_import', Excel::CSV)
+                ->chain([new NotifyCompletedImport($this->fileUpload)]);
         } catch (ValidationException|Throwable $e) {
-            DB::rollBack();
             $failures = $e->failures();
             foreach ($failures as $failure) {
               Log::error("Row {$failure->row()}: {$failure->errors()} ");
             }
-            $fileUpload->update(['status' => UploadStatus::Failed]);
+            $this->fileUpload->update(['status' => UploadStatus::Failed]);
         }
 
     }

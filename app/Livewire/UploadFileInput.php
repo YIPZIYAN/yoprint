@@ -16,6 +16,9 @@ class UploadFileInput extends Component
 
     #[Validate('required')]
     public ?TemporaryUploadedFile $file = null;
+
+    #[Validate('unique:file_uploads,hash',
+        message: 'This file has already been uploaded and processed.')]
     public string $hash;
 
     public function render()
@@ -23,23 +26,26 @@ class UploadFileInput extends Component
         return view('livewire.upload-file-input');
     }
 
-    public function save()
+    public function save(): void
     {
         $this->hash = hash_file('sha256', $this->file->getRealPath());
-        $isSameHash = FileUpload::where('hash', $this->hash)->first();
-        if ($isSameHash != null) {
-            $this->validate(['hash' => 'unique:file_uploads,hash'],
-                ['hash.unique' => 'This file has already been uploaded and processed.',]);
-        }
+        $this->validate();
 
+        $fileUpload = $this->saveFile();
+        UploadFileJob::dispatch($fileUpload);
+    }
+
+    /**
+     * @return FileUpload
+     */
+    public function saveFile(): FileUpload
+    {
         $fileName = now()->timestamp . '_' . uniqid() . '.' . $this->file->guessExtension();
-        $this->file->storeAs('', $fileName, "csv_import");
-        FileUpload::create([
+        $this->file->storeAs('', $fileName, 'csv_import');
+        return FileUpload::create([
             'name' => $this->file->getClientOriginalName(),
             'path' => $fileName,
             'hash' => $this->hash,
         ]);
-
-//        UploadFileJob::dispatch();
     }
 }

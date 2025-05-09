@@ -31,9 +31,9 @@ class FileUploadController extends Controller
      */
     public function store(StoreFileUploadRequest $request)
     {
-        $fileName = now()->format('Ymd_His') . '_' . $request->file('csvFile')->getClientOriginalName();
-        UploadFileJob::dispatch($request->file('csvFile')->storeAs('files', $fileName), $fileName);
-        return redirect()->route('home');
+//        $fileName = now()->format('Ymd_His') . '_' . $request->file('csvFile')->getClientOriginalName();
+//        UploadFileJob::dispatch($request->file('csvFile')->storeAs('files', $fileName), $fileName);
+//        return redirect()->route('home');
     }
 
     /**
