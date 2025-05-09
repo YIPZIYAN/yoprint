@@ -12,6 +12,7 @@ class FileUpload extends Model
     protected $fillable = [
         'name',
         'path',
+        'hash',
         'status',
     ];
 
