@@ -7,6 +7,7 @@ use App\Models\FileUpload;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\DB;
 
 class NotifyCompletedImport implements ShouldQueue
 {
