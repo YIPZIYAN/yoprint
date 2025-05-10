@@ -35,19 +35,9 @@ class UploadFileJob implements ShouldQueue
      */
     public function handle(): void
     {
-
-        try {
-            (new FileUploadsImport($this->fileUpload))
-                ->queue($this->fileUpload->path, 'csv_import', Excel::CSV)
-                ->chain([new NotifyCompletedImport($this->fileUpload)]);
-        } catch (ValidationException|Throwable $e) {
-            $failures = $e->failures();
-            foreach ($failures as $failure) {
-              Log::error("Row {$failure->row()}: {$failure->errors()} ");
-            }
-            $this->fileUpload->update(['status' => UploadStatus::Failed]);
-        }
-
+        (new FileUploadsImport($this->fileUpload))
+            ->queue($this->fileUpload->path, 'csv_import', Excel::CSV)
+            ->chain([new NotifyCompletedImport($this->fileUpload)]);
     }
 
 
