@@ -16,9 +16,6 @@ class UploadFileInput extends Component
 
     #[Validate('required')]
     public ?TemporaryUploadedFile $file = null;
-
-    #[Validate('unique:file_uploads,hash',
-        message: 'This file has already been uploaded and processed.')]
     public string $hash;
 
     public function render()
@@ -29,7 +26,12 @@ class UploadFileInput extends Component
     public function save(): void
     {
         $this->hash = hash_file('sha256', $this->file->getRealPath());
-        $this->validate();
+        $this->validate([
+            'hash' => 'unique:file_uploads,hash'
+        ], [
+            'hash.unique' => 'This file has already been uploaded and processed.',
+        ]);
+
 
         $fileUpload = $this->saveFile();
         UploadFileJob::dispatch($fileUpload);
