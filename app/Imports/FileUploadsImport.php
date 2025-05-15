@@ -27,7 +27,7 @@ use function PHPUnit\Framework\isString;
 
 class FileUploadsImport implements ToModel, WithHeadingRow, WithBatchInserts,
     WithUpserts, WithChunkReading, ShouldQueue,
-    WithCustomCsvSettings, WithEvents, SkipsOnFailure, WithValidation,SkipsOnError
+    WithCustomCsvSettings, WithEvents, SkipsOnFailure, WithValidation //,SkipsOnError
 {
     use Importable;
 
@@ -105,14 +105,17 @@ class FileUploadsImport implements ToModel, WithHeadingRow, WithBatchInserts,
     public function onFailure(Failure ...$failures)
     {
         foreach ($failures as $failure) {
-            Log::error("Row {$failure->row()}: {$failure->errors()} ");
+            $this->fileUpload->failedFileUploads()->create([
+                'row' => $failure->row(),
+                'remark' => implode(', ', $failure->errors())
+            ]);
         }
     }
 
     public function rules(): array
     {
         return [
-            '*.unique_key' => 'required',
+            '*.unique_key' => 'required|integer',
             '*.size' => 'required',
             '*.style' => 'required',
             '*.product_title' => 'required',
@@ -123,8 +126,8 @@ class FileUploadsImport implements ToModel, WithHeadingRow, WithBatchInserts,
         ];
     }
 
-    public function onError(Throwable $e)
-    {
-        Log::error($e->getMessage());
-    }
+//    public function onError(Throwable $e)
+//    {
+//        Log::error($e->getMessage());
+//    }
 }
